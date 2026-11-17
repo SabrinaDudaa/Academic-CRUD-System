@@ -1,49 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/style/Cadastro.css" />
-    <link rel="stylesheet" href="/style/Menu.css" />
-    <title>Cadastros</title>
-  </head>
-  <body>
-    <nav class="menu">
-    <div class="menu-container">
-      <div class="logo">
-        <span class="material-icons">pets</span>
-        <h2>Shadow System</h2>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pessoas · PetAdoption</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/style/app.css">
+</head>
+<body>
+  <main class="page">
+    <div class="page-header">
+      <div>
+        <h1>Pessoas</h1>
+        <p id="resumoLista">Adotantes, voluntários e doadores.</p>
       </div>
-      <div class="menu-links">
-        <a href="index.html" class="active">
-          <span class="material-icons">dashboard</span> Informações Gerais
-        </a>
-        <a href="Doacoes.html"><span class="material-icons">article</span> Doações</a>
-        <a href="Pessoas.html"><span class="material-icons">people</span> Cadastros</a>
-        <a href="Pets.html"><span class="material-icons">pets</span> Animais</a>
-        <a href="Adocao.html">
-          <span class="material-icons">article</span>
-          Adoção
-        </a>
-      </div>
+      <a class="btn btn-primary" href="CadPessoa.html">
+        <span class="material-icons" aria-hidden="true">person_add</span> Nova pessoa
+      </a>
     </div>
-  </nav>
 
+    <div class="toolbar">
+      <div class="search">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input type="search" id="busca" placeholder="Buscar por nome, CPF, e-mail ou cidade" aria-label="Buscar pessoas">
+      </div>
+      <select id="filtroCargo" aria-label="Filtrar por cargo">
+        <option value="">Todos os cargos</option>
+        <option value="adotante">Adotante</option>
+        <option value="voluntario">Voluntário</option>
+        <option value="doador">Doador</option>
+        <option value="nenhum">Sem cargo</option>
+      </select>
+    </div>
 
-    <div id="listaPessoas"></div>
-    
-    
-    
-      
-    <a href="CadPessoa.html"><button class="button-newCad">Novo Cadastro</button></a>
-      
-    
-<script src="/js/menu/MenuSite.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="../js/validacao/listaPessoas.js"></script>
-  </body>
+    <div id="listaPessoas" class="table-wrap"></div>
+  </main>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/validacao/listaPessoas.js"></script>
+</body>
 </html>

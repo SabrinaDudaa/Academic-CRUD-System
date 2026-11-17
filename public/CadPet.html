@@ -1,74 +1,66 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="/style/Cadastro.css" />
-    <link rel="stylesheet" href="/style/Menu.css" />
-    <title>Cadastro Pet</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de animal · PetAdoption</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/style/app.css">
 </head>
 <body>
-
-<nav class="menu">
-    <div class="menu-container">
-      <div class="logo">
-        <span class="material-icons">pets</span>
-        <h2>PetAdoption</h2>
-      </div>
-      <div class="menu-links">
-        <a href="index.html" class="active">
-          <span class="material-icons">dashboard</span> Informações Gerais
-        </a>
-        <a href="Doacoes.html"><span class="material-icons">article</span> Doações</a>
-        <a href="Pessoas.html"><span class="material-icons">people</span> Cadastros</a>
-        <a href="Pets.html"><span class="material-icons">pets</span> Animais</a>
-        <a href="Adocao.html">
-          <span class="material-icons">article</span>
-          Adoção
-        </a>
+  <main class="page page-narrow">
+    <div class="page-header">
+      <div>
+        <h1 id="titulo">Novo animal</h1>
+        <p id="subtitulo">Preencha os dados do animal.</p>
       </div>
     </div>
-  </nav>
 
-<div class="InfoPet">
-  <form id="formPet">
-    <h1>Registro Pet</h1>
-    <div class="forms">
-        <label for="nomePet">
-            Nome:
-            <input type="text" size="30" name="nomePet" required>
-        </label>
-        <label for="idadePet">
-            Idade:
-            <input type="text" size="10" name="idadePet">
-        </label>
-        <label for="dataChegada">
-            Data de Chegada:
-            <input type="text" size="35" name="dataChegada" required>
-        </label>
-        <label for="especiePet">
-            Espécie:
-            <input type="text" size="20" name="especiePet" required>
-        </label>
-        <label for="racaPet">
-            Raça:
-            <input type="text" size="35" name="racaPet" required>
-        </label>
-
-        <div class="custom-button">
-          <div class="button-container">
-            <button class="button-submit" type="submit">Enviar</button>
-          </div>
-          <div class="button-container">
-            <button class="button-reset" type="reset">Apagar</button>
-          </div>
+    <form id="formPet" class="card" novalidate>
+      <div class="form-grid">
+        <div class="field span-8">
+          <label for="nomePet">Nome <span class="req">*</span></label>
+          <input type="text" id="nomePet" name="nomePet" maxlength="100" required>
+          <span class="error" data-erro="nomePet"></span>
         </div>
-    </div>
-  </form>
-</div>
+        <div class="field span-4">
+          <label for="idadePet">Idade (anos) <span class="req">*</span></label>
+          <input type="number" id="idadePet" name="idadePet" min="0" max="60" inputmode="numeric" required>
+          <span class="error" data-erro="idadePet"></span>
+        </div>
 
-<script src="/js/menu/MenuSite.js"></script>
-<script src="/js/validacao/enviaPet.js"></script>
+        <div class="field span-6">
+          <label for="especiePet">Espécie <span class="req">*</span></label>
+          <input type="text" id="especiePet" name="especiePet" maxlength="100" list="especies" placeholder="Ex.: Cachorro" required>
+          <datalist id="especies">
+            <option value="Cachorro"></option>
+            <option value="Gato"></option>
+          </datalist>
+          <span class="error" data-erro="especiePet"></span>
+        </div>
+        <div class="field span-6">
+          <label for="racaPet">Raça <span class="req">*</span></label>
+          <input type="text" id="racaPet" name="racaPet" maxlength="100" placeholder="Ex.: Vira-lata" required>
+          <span class="error" data-erro="racaPet"></span>
+        </div>
+
+        <div class="field span-6">
+          <label for="dataChegada">Data de chegada <span class="req">*</span></label>
+          <input type="date" id="dataChegada" name="dataChegada" required>
+          <span class="error" data-erro="dataChegada"></span>
+        </div>
+
+        <div class="form-actions">
+          <a class="btn btn-secondary" href="Pets.html">Cancelar</a>
+          <button class="btn btn-primary" type="submit" id="salvar">
+            <span class="material-icons" aria-hidden="true">save</span> Salvar
+          </button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/validacao/enviaPet.js"></script>
 </body>
 </html>
