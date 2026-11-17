@@ -1,84 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cadastro de Adoção</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <link rel="stylesheet" href="/style/Cadastro.css" />
-  <link rel="stylesheet" href="/style/Menu.css" />
-  <link rel="stylesheet" href="/style/Adocao.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adoção · PetAdoption</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/style/app.css">
 </head>
 <body>
-  <nav class="menu">
-    <div class="menu-container">
-      <div class="logo">
-        <span class="material-icons">pets</span>
-        <h2>PetAdoption</h2>
-      </div>
-      <div class="menu-links">
-        <a href="index.html" class="active">
-          <span class="material-icons">dashboard</span> Informações Gerais
-        </a>
-        <a href="Doacoes.html"><span class="material-icons">article</span> Doações</a>
-        <a href="Pessoas.html"><span class="material-icons">people</span> Cadastros</a>
-        <a href="Pets.html"><span class="material-icons">pets</span> Animais</a>
-        <a href="Adocao.html">
-          <span class="material-icons">article</span>
-          Adoção
-        </a>
+  <main class="page">
+    <div class="page-header">
+      <div>
+        <h1>Adoção</h1>
+        <p>Escolha o adotante e o animal para registrar uma nova adoção.</p>
       </div>
     </div>
-  </nav>
 
-  <div class="container">
-    <h1>Cadastro de Adoção</h1>
-
-    <section>
-      <h2>Adotantes</h2>
-      <input type="search" id="searchAdotante" placeholder="Buscar adotante por nome" />
-      <table id="tableAdotantes">
-        <thead>
-          <tr><th>Nome</th><th>CPF</th></tr>
-        </thead>
-        <tbody>
-          <!-- Dados dos adotantes preenchidos via JS -->
-        </tbody>
-      </table>
-    </section>
-
-    <section>
-      <h2>Pets</h2>
-      <input type="search" id="searchPet" placeholder="Buscar pet por nome" />
-      <table id="tablePets">
-        <thead>
-          <tr><th>Nome</th><th>Espécie</th></tr>
-        </thead>
-        <tbody>
-          <!-- Dados dos pets preenchidos via JS -->
-        </tbody>
-      </table>
-    </section>
-
-    <form id="formAdocao">
-      <label for="dataAdocao">
-        Data da Adoção:
-        <input type="date" id="dataAdocao" name="dataAdocao" required />
-      </label>
-
-      <div class="custom-button">
-          <div class="button-container">
-            <button class="button-submit" type="submit">Enviar</button>
-          </div>
-          <div class="button-container">
-            <button class="button-reset" type="reset">Apagar</button>
-          </div>
+    <div class="steps">
+      <section class="card">
+        <div class="step-title"><span class="step-num">1</span> Adotante</div>
+        <div class="search" style="margin-bottom: 12px">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input type="search" id="searchAdotante" placeholder="Buscar adotante por nome" aria-label="Buscar adotante">
         </div>
+        <div class="table-wrap scroll-box" style="box-shadow:none; border:1px solid var(--border)">
+          <table id="tableAdotantes" class="table-select">
+            <thead><tr><th>Nome</th><th>CPF</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="step-title"><span class="step-num">2</span> Animal disponível</div>
+        <div class="search" style="margin-bottom: 12px">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input type="search" id="searchPet" placeholder="Buscar animal por nome" aria-label="Buscar animal">
+        </div>
+        <div class="table-wrap scroll-box" style="box-shadow:none; border:1px solid var(--border)">
+          <table id="tablePets" class="table-select">
+            <thead><tr><th>Nome</th><th>Espécie</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <form id="formAdocao" class="card" novalidate>
+      <div class="step-title"><span class="step-num">3</span> Confirmar</div>
+      <div class="confirm-bar">
+        <p class="summary" id="resumoSelecao" aria-live="polite">Selecione um adotante e um animal.</p>
+        <div class="field date-field">
+          <label for="dataAdocao">Data da adoção</label>
+          <input type="date" id="dataAdocao" name="dataAdocao" required>
+        </div>
+        <button class="btn btn-primary" type="submit" id="registrar">
+          <span class="material-icons" aria-hidden="true">favorite</span> Registrar adoção
+        </button>
+      </div>
     </form>
-  </div>
 
+    <h2 class="section-title">Contratos de adoção <span class="count-pill" id="contaContratos">0</span></h2>
+    <div id="listaContratos" class="table-wrap"></div>
+  </main>
 
-  <script src="/js/menu/MenuSite.js"></script>
+  <script src="/js/app.js"></script>
   <script src="/js/validacao/enviaAdocao.js"></script>
 </body>
 </html>

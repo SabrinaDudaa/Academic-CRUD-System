@@ -1,51 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-     <link rel="stylesheet" href="/style/Cadastro.css" />
-    <link rel="stylesheet" href="/style/Menu.css" />
-    <link rel="stylesheet" href="/style/ListaPet.css">
-    <title>Pets</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animais · PetAdoption</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/style/app.css">
 </head>
 <body>
-  <nav class="menu">
-    <div class="menu-container">
-      <div class="logo">
-        <span class="material-icons">pets</span>
-        <h2>Shadow System</h2>
+  <main class="page">
+    <div class="page-header">
+      <div>
+        <h1>Animais</h1>
+        <p id="resumoLista">Animais disponíveis e já adotados.</p>
       </div>
-      <div class="menu-links">
-        <a href="index.html" class="active">
-          <span class="material-icons">dashboard</span> Informações Gerais
-        </a>
-        <a href="Doacoes.html"><span class="material-icons">article</span> Doações</a>
-        <a href="Pessoas.html"><span class="material-icons">people</span> Cadastros</a>
-        <a href="Pets.html"><span class="material-icons">pets</span> Animais</a>
-        <a href="Adocao.html">
-          <span class="material-icons">article</span>
-          Adoção
-        </a>
-      </div>
+      <a class="btn btn-primary" href="CadPet.html">
+        <span class="material-icons" aria-hidden="true">add</span> Novo animal
+      </a>
     </div>
-  </nav>
 
+    <div class="toolbar">
+      <div class="search">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input type="search" id="busca" placeholder="Buscar por nome ou raça" aria-label="Buscar animais">
+      </div>
+      <select id="filtroEspecie" aria-label="Filtrar por espécie">
+        <option value="">Todas as espécies</option>
+      </select>
+    </div>
 
-  <main class="container">
-    <h1>Pets Disponíveis</h1>
-    <div id="listaPetsDisponiveis" class="pets-container"></div>
+    <h2 class="section-title">Disponíveis para adoção <span class="count-pill" id="contaDisponiveis">0</span></h2>
+    <div id="listaPetsDisponiveis" class="grid"></div>
 
-    <h1>Pets Adotados</h1>
-    <div id="listaPetsAdotados" class="pets-container"></div>
+    <h2 class="section-title">Já adotados <span class="count-pill" id="contaAdotados">0</span></h2>
+    <div id="listaPetsAdotados" class="grid"></div>
   </main>
 
-
-  <a href="CadPet.html"><button class="button-newCad">Novo Cadastro</button></a>
-
-
-  <script src="/js/menu/MenuSite.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="/js/validacao/listaPet.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/validacao/listaPet.js"></script>
 </body>
 </html>

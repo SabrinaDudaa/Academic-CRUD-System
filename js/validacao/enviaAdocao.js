@@ -1,154 +1,238 @@
-console.log("enviaAdocao.js carregado");
-
-let selecionadoAdotante = null;
-let selecionadoPet = null;
-
 document.addEventListener('DOMContentLoaded', () => {
-  carregarAdotantes();
-  carregarPets();
+  const { api, esc, formatarCpf, formatarData, normalizar, confirmar, formulario, aviso, vazio } = App;
 
-  // Filtros
-  document.getElementById('searchAdotante').addEventListener('input', e => {
-    filtrarTabela('tableAdotantes', e.target.value);
-  });
-  document.getElementById('searchPet').addEventListener('input', e => {
-    filtrarTabela('tablePets', e.target.value);
-  });
+  const form = document.getElementById('formAdocao');
+  const resumo = document.getElementById('resumoSelecao');
+  const botaoRegistrar = document.getElementById('registrar');
 
-  // Submit do formulário
-  document.getElementById('formAdocao').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  let adotantes = [];
+  let pets = [];
+  let contratos = [];
+  let selecionadoAdotante = null;
+  let selecionadoPet = null;
 
-    if (!selecionadoAdotante) {
-      alert('Selecione um adotante.');
-      return;
-    }
-    if (!selecionadoPet) {
-      alert('Selecione um pet.');
-      return;
-    }
+  const hoje = () => {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  };
+  form.dataAdocao.value = hoje();
 
-    const dataAdocao = e.target.dataAdocao.value;
-    if (!dataAdocao) {
-      alert('Informe a data da adoção.');
-      return;
-    }
-
-    const data = {
-      idAdotante: selecionadoAdotante,
-      idPet: selecionadoPet,
-      dataAdocao: dataAdocao
-    };
-
-    console.log('Dados enviados:', data);
-
+  /* ---------- Carregamento ---------- */
+  async function carregarTudo() {
     try {
-      const response = await fetch('http://localhost:3000/api/adocao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      [adotantes, pets, contratos] = await Promise.all([
+        api('/api/adotantes'),
+        api('/api/pets-disponiveis'),
+        api('/api/adocoes'),
+      ]);
+    } catch (erro) {
+      aviso(erro.message, 'error');
+      return;
+    }
 
-      if (response.ok) {
-        alert('Adoção cadastrada com sucesso!');
-        e.target.reset();
-        limparSelecao();
-        location.reload();
-      } else {
-        const err = await response.json();
-        alert('Erro ao cadastrar adoção: ' + (err.error || 'Erro desconhecido'));
+    // Se o item selecionado sumiu (ex.: pet acabou de ser adotado), limpa a escolha.
+    if (!adotantes.some((a) => String(a.idpessoa) === selecionadoAdotante)) selecionadoAdotante = null;
+    if (!pets.some((p) => String(p.idpet) === selecionadoPet)) selecionadoPet = null;
+
+    desenharAdotantes();
+    desenharPets();
+    desenharContratos();
+    atualizarResumo();
+  }
+
+  /* ---------- Tabelas de seleção ---------- */
+  function desenharAdotantes() {
+    const tbody = document.querySelector('#tableAdotantes tbody');
+    tbody.innerHTML = adotantes.length
+      ? adotantes
+          .map(
+            (a) => `
+        <tr data-id="${a.idpessoa}" class="${String(a.idpessoa) === selecionadoAdotante ? 'selected' : ''}"
+            tabindex="0" aria-selected="${String(a.idpessoa) === selecionadoAdotante}">
+          <td>${esc(a.nomepessoa)}</td><td>${esc(formatarCpf(a.cpf))}</td>
+        </tr>`
+          )
+          .join('')
+      : '<tr><td colspan="2" class="loading">Nenhum adotante cadastrado.</td></tr>';
+    filtrar('tableAdotantes', document.getElementById('searchAdotante').value);
+  }
+
+  function desenharPets() {
+    const tbody = document.querySelector('#tablePets tbody');
+    tbody.innerHTML = pets.length
+      ? pets
+          .map(
+            (p) => `
+        <tr data-id="${p.idpet}" class="${String(p.idpet) === selecionadoPet ? 'selected' : ''}"
+            tabindex="0" aria-selected="${String(p.idpet) === selecionadoPet}">
+          <td>${esc(p.nomepet)}</td><td>${esc(p.especie)}</td>
+        </tr>`
+          )
+          .join('')
+      : '<tr><td colspan="2" class="loading">Nenhum animal disponível.</td></tr>';
+    filtrar('tablePets', document.getElementById('searchPet').value);
+  }
+
+  function filtrar(idTabela, texto) {
+    const termo = normalizar(texto);
+    document.querySelectorAll(`#${idTabela} tbody tr[data-id]`).forEach((tr) => {
+      tr.hidden = !normalizar(tr.cells[0].textContent).includes(termo);
+    });
+  }
+
+  function selecionar(tipo, id) {
+    if (tipo === 'adotante') selecionadoAdotante = id;
+    else selecionadoPet = id;
+    desenharAdotantes();
+    desenharPets();
+    atualizarResumo();
+  }
+
+  function atualizarResumo() {
+    const a = adotantes.find((x) => String(x.idpessoa) === selecionadoAdotante);
+    const p = pets.find((x) => String(x.idpet) === selecionadoPet);
+
+    if (a && p) {
+      resumo.innerHTML = `<strong>${esc(p.nomepet)}</strong> será adotado(a) por <strong>${esc(a.nomepessoa)}</strong>.`;
+    } else if (a) {
+      resumo.innerHTML = `Adotante: <strong>${esc(a.nomepessoa)}</strong>. Agora escolha o animal.`;
+    } else if (p) {
+      resumo.innerHTML = `Animal: <strong>${esc(p.nomepet)}</strong>. Agora escolha o adotante.`;
+    } else {
+      resumo.textContent = 'Selecione um adotante e um animal.';
+    }
+  }
+
+  for (const [idTabela, tipo] of [['tableAdotantes', 'adotante'], ['tablePets', 'pet']]) {
+    const tabela = document.getElementById(idTabela);
+    tabela.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-id]');
+      if (tr) selecionar(tipo, tr.dataset.id);
+    });
+    tabela.addEventListener('keydown', (e) => {
+      const tr = e.target.closest('tr[data-id]');
+      if (tr && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        selecionar(tipo, tr.dataset.id);
       }
-    } catch (err) {
-      console.error(err);
-      alert('Erro de conexão com o servidor.');
+    });
+  }
+
+  document.getElementById('searchAdotante').addEventListener('input', (e) => filtrar('tableAdotantes', e.target.value));
+  document.getElementById('searchPet').addEventListener('input', (e) => filtrar('tablePets', e.target.value));
+
+  /* ---------- Registrar nova adoção ---------- */
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!selecionadoAdotante) return aviso('Selecione um adotante.', 'error');
+    if (!selecionadoPet) return aviso('Selecione um animal.', 'error');
+    if (!form.dataAdocao.value) return aviso('Informe a data da adoção.', 'error');
+
+    botaoRegistrar.disabled = true;
+    try {
+      await api('/api/adocao', {
+        method: 'POST',
+        body: { idAdotante: selecionadoAdotante, idPet: selecionadoPet, dataAdocao: form.dataAdocao.value },
+      });
+      aviso('Adoção registrada com sucesso!');
+      selecionadoAdotante = null;
+      selecionadoPet = null;
+      form.dataAdocao.value = hoje();
+      await carregarTudo();
+    } catch (erro) {
+      aviso(erro.message, 'error');
+    } finally {
+      botaoRegistrar.disabled = false;
     }
   });
 
-  // Botão reset para limpar seleção junto com o form
-  document.getElementById('formAdocao').addEventListener('reset', () => {
-    limparSelecao();
-  });
-});
+  /* ---------- Lista de contratos (editar e excluir) ---------- */
+  function desenharContratos() {
+    document.getElementById('contaContratos').textContent = contratos.length;
+    const lista = document.getElementById('listaContratos');
 
-function carregarAdotantes() {
-    console.log("Carregando adotantes...");
-    fetch('http://localhost:3000/api/adotantes')
-    .then(res => res.json())
-    .then(pessoas => {
-      const tbody = document.querySelector('#tableAdotantes tbody');
-      tbody.innerHTML = '';
-      pessoas.forEach(pessoa => {
-        const tr = document.createElement('tr');
-        tr.dataset.id = pessoa.idpessoa;
-        tr.innerHTML = `<td>${pessoa.nomepessoa}</td><td>${pessoa.cpf}</td>`;
-        tr.addEventListener('click', () => selecionarLinha(tr, 'adotante'));
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(err => {
-      console.error('Erro ao carregar adotantes:', err);
-      alert('Erro ao carregar adotantes');
-    });
-}
+    if (!contratos.length) {
+      lista.innerHTML = vazio('volunteer_activism', 'Nenhum contrato ainda', 'Registre uma adoção acima.');
+      return;
+    }
 
-
-function carregarPets() {
-  fetch('http://localhost:3000/api/pets-disponiveis')
-    .then(res => res.json())
-    .then(pets => {
-      const tbody = document.querySelector('#tablePets tbody');
-      tbody.innerHTML = '';
-      pets.forEach(pet => {
-        const tr = document.createElement('tr');
-        tr.dataset.id = pet.idpet;
-        tr.innerHTML = `<td>${pet.nomepet}</td><td>${pet.especie}</td>`;
-        tr.addEventListener('click', () => selecionarLinha(tr, 'pet'));
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(err => {
-      console.error('Erro ao carregar pets:', err);
-      alert('Erro ao carregar pets');
-    });
-}
-
-function selecionarLinha(tr, tipo) {
-  // Remove todas as seleções do mesmo tipo primeiro
-  const tabela = tipo === 'adotante' ? '#tableAdotantes' : '#tablePets';
-  document.querySelectorAll(`${tabela} tr.selected`).forEach(row => {
-    row.classList.remove('selected');
-  });
-
-  // Adiciona a seleção à linha clicada
-  tr.classList.add('selected');
-  
-  // Atualiza a variável correspondente
-  if (tipo === 'adotante') {
-    selecionadoAdotante = tr.dataset.id;
-    console.log('Adotante selecionado:', selecionadoAdotante);
-  } else {
-    selecionadoPet = tr.dataset.id;
-    console.log('Pet selecionado:', selecionadoPet);
+    lista.innerHTML = `
+      <table class="table-stack">
+        <thead><tr><th>Animal</th><th>Adotante</th><th>Data</th><th>Situação</th><th></th></tr></thead>
+        <tbody>
+          ${contratos
+            .map(
+              (c) => `
+            <tr>
+              <td data-label="Animal"><strong>${esc(c.nomepet)}</strong><span class="sub">${esc(c.especie)}</span></td>
+              <td data-label="Adotante">${esc(c.nomeadotante)}</td>
+              <td data-label="Data">${formatarData(c.data)}</td>
+              <td data-label="Situação"><span class="badge ${c.situacao === 'Ativo' ? 'green' : 'gray'}">${esc(c.situacao)}</span></td>
+              <td class="col-actions">
+                <button class="icon-btn" data-editar="${c.idcontrato}" title="Editar contrato de ${esc(c.nomepet)}" aria-label="Editar contrato de ${esc(c.nomepet)}">
+                  <span class="material-icons" aria-hidden="true">edit</span>
+                </button>
+                <button class="icon-btn danger" data-excluir="${c.idcontrato}" title="Excluir contrato de ${esc(c.nomepet)}" aria-label="Excluir contrato de ${esc(c.nomepet)}">
+                  <span class="material-icons" aria-hidden="true">delete</span>
+                </button>
+              </td>
+            </tr>`
+            )
+            .join('')}
+        </tbody>
+      </table>`;
   }
-  
-  // Debug: verifica se a classe foi aplicada
-  console.log('Linha selecionada:', tr);
-  console.log('Classes da linha:', tr.classList);
-}
 
-function limparSelecao() {
-  selecionadoAdotante = null;
-  selecionadoPet = null;
-  document.querySelectorAll('tr.selected').forEach(row => {
-    row.classList.remove('selected');
-  });
-}
+  document.getElementById('listaContratos').addEventListener('click', async (e) => {
+    const editar = e.target.closest('[data-editar]');
+    const excluir = e.target.closest('[data-excluir]');
 
-function filtrarTabela(idTabela, textoFiltro) {
-  textoFiltro = textoFiltro.toLowerCase();
-  const tbody = document.querySelector(`#${idTabela} tbody`);
-  tbody.querySelectorAll('tr').forEach(tr => {
-    const nome = tr.cells[0].textContent.toLowerCase();
-    tr.style.display = nome.includes(textoFiltro) ? '' : 'none';
+    if (editar) {
+      const c = contratos.find((x) => String(x.idcontrato) === editar.dataset.editar);
+      formulario({
+        titulo: `Contrato de ${c.nomepet}`,
+        camposHtml: `
+          <div class="field">
+            <label for="dlgSituacao">Situação</label>
+            <select id="dlgSituacao" name="situacao">
+              <option value="Ativo" ${c.situacao === 'Ativo' ? 'selected' : ''}>Ativo</option>
+              <option value="Inativo" ${c.situacao === 'Inativo' ? 'selected' : ''}>Inativo (adoção encerrada)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dlgData">Data da adoção</label>
+            <input type="date" id="dlgData" name="dataAdocao" value="${esc(c.data)}" required>
+          </div>`,
+        onSubmit: async (f) => {
+          await api(`/api/adocao/${c.idcontrato}`, {
+            method: 'PUT',
+            body: { situacao: f.situacao.value, dataAdocao: f.dataAdocao.value },
+          });
+          aviso('Contrato atualizado com sucesso!');
+          await carregarTudo();
+        },
+      });
+    }
+
+    if (excluir) {
+      const c = contratos.find((x) => String(x.idcontrato) === excluir.dataset.excluir);
+      const ok = await confirmar({
+        titulo: 'Excluir contrato?',
+        mensagem: `O contrato de adoção de ${c.nomepet} (${c.nomeadotante}) será removido. Essa ação não pode ser desfeita.`,
+        confirmarTexto: 'Excluir',
+        perigo: true,
+      });
+      if (!ok) return;
+      try {
+        await api(`/api/adocao/${c.idcontrato}`, { method: 'DELETE' });
+        aviso('Contrato excluído com sucesso!');
+        await carregarTudo();
+      } catch (erro) {
+        aviso(erro.message, 'error');
+      }
+    }
   });
-}
+
+  carregarTudo();
+});
